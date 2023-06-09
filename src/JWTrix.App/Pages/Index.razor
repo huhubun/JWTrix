@@ -1,0 +1,183 @@
+﻿@page "/"
+
+@using JWTrix.Data.Entities;
+@using JWTrix.Service.Abstractions;
+
+@inject NavigationManager Navigation
+@inject StateContainer State
+@inject ILogger<Index> logger
+@inject ISnackbar Snackbar
+@inject IDatabaseService DatabaseService
+@inject IHistoryService HistoryService
+
+<MudContainer Fixed>
+
+    <MudText Typo="Typo.h2" Align="Align.Center" Class="mx-6">请选择 JWT 来源</MudText>
+
+    <MudGrid>
+        <MudItem xs="12">
+            <MudButton FullWidth DisableElevation Variant="Variant.Text" Color="Color.Primary" Class="border-0 rounded-xl" OnClick="OnLoadFromHardCodeClickAsync">
+                <MudPaper Elevation="0" Width="100%" Style="@($"background:{Colors.Shades.Transparent};text-align: left;")">
+                    <MudText Typo="Typo.h4" Class="">HARD CODE</MudText>
+                    <MudText Typo="Typo.h6" Class="">使用一段示例 JWT，仅供开发时调试使用</MudText>
+                </MudPaper>
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudButton FullWidth DisableElevation Variant="Variant.Text" Color="Color.Primary" Class="border-0 rounded-xl" OnClick="OnLoadFromClipboardClick">
+                <MudPaper Elevation="0" Width="100%" Style="@($"background:{Colors.Shades.Transparent}; text-align: left;")">
+                    <MudText Typo="Typo.h5" Class="">从剪贴板导入</MudText>
+                    <MudText Typo="Typo.h6" Class="">将从剪贴板中读取提前复制好的 JWT</MudText>
+                </MudPaper>
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudButton FullWidth DisableElevation Variant="Variant.Text" Color="Color.Primary" Class="border-0 rounded-xl" OnClick="OnLoadFromFileClick">
+                <MudPaper Elevation="0" Width="100%" Style="@($"background:{Colors.Shades.Transparent}; text-align: left;")">
+                    <MudText Typo="Typo.h5" Class="">从文件导入</MudText>
+                    <MudText Typo="Typo.h6" Class="">将从选中的文件中读取 JWT</MudText>
+                </MudPaper>
+            </MudButton>
+        </MudItem>
+
+        <MudDivider />
+
+        <MudItem xs="12">
+            <MudButton FullWidth DisableElevation Variant="Variant.Text" Color="Color.Primary" Class="border-0 rounded-xl" OnClick="OnViewHistoryClick">
+                <MudPaper Elevation="0" Width="100%" Style="@($"background:{Colors.Shades.Transparent}; text-align: left;")">
+                    <MudText Typo="Typo.h5" Class="">查看历史记录</MudText>
+                    <MudText Typo="Typo.h6" Class="">浏览和比较曾经解析过的 JWT</MudText>
+                </MudPaper>
+            </MudButton>
+        </MudItem>
+
+    </MudGrid>
+
+</MudContainer>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await DatabaseService.InitDatabaseAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    async Task OnLoadFromHardCodeClickAsync()
+    {
+        logger.LogDebug(nameof(OnLoadFromHardCodeClickAsync));
+
+        var content = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+        var jwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(content);
+        var history = await AddHistoryAsync(content, jwtSecurityToken);
+
+        Navigation.NavigateTo($"/detail/{history.Id}");
+    }
+
+    async Task OnLoadFromClipboardClick()
+    {
+        logger.LogDebug(nameof(OnLoadFromClipboardClick));
+
+        if (Clipboard.Default.HasText)
+        {
+            var content = await Clipboard.Default.GetTextAsync();
+
+            if (content != null && JwtHelper.CheckIsJwt(content))
+            {
+                var jwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(content);
+                var history = await AddHistoryAsync(content, jwtSecurityToken);
+
+                Navigation.NavigateTo($"/detail/{history.Id}");
+            }
+            else
+            {
+                // TODO 以后考虑这里增加一个“编辑”按钮，直接修改剪贴板和文件的内容
+                Snackbar.Add("剪贴板内容不是有效的JWT", Severity.Normal, DefaultSnackbarOptions.HideIconAndCloseAfterNavigation);
+                return;
+            }
+        }
+        else
+        {
+            Snackbar.Add("剪贴板为空", Severity.Normal, DefaultSnackbarOptions.HideIconAndCloseAfterNavigation);
+            return;
+        }
+    }
+
+    async Task OnLoadFromFileClick()
+    {
+        logger.LogDebug(nameof(OnLoadFromFileClick));
+
+        try
+        {
+            var result = await FilePicker.Default.PickAsync(new()
+            {
+                PickerTitle = "Please select a comic file",
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { String.Empty } },
+                    { DevicePlatform.Android, new[] { "*/*" } },
+                    { DevicePlatform.iOS, new[] { "public.data" } },
+                    { DevicePlatform.macOS, new[] { "public.data" } },
+                    { DevicePlatform.Tizen, new[] { "*/*" } }
+                })
+            });
+
+            if (result == null)
+            {
+                return;
+            }
+            else
+            {
+                using var stream = await result.OpenReadAsync();
+                using var sr = new StreamReader(stream,true);
+                var content = await sr.ReadToEndAsync();
+
+                if (JwtHelper.CheckIsJwt(content))
+                {
+                    var jwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(content);
+                    var history = await AddHistoryAsync(content, jwtSecurityToken);
+
+                    Navigation.NavigateTo($"/detail/{history.Id}");
+                }
+                else
+                {
+                    Snackbar.Add($"文件 {result.FileName} 的内容不是有效的JWT", Severity.Normal, DefaultSnackbarOptions.HideIconAndCloseAfterNavigation);
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Load jwt from file failed.");
+
+            Snackbar.Add("文件读取失败", Severity.Error, DefaultSnackbarOptions.HideIconAndCloseAfterNavigation);
+            return;
+        }
+    }
+
+    void OnViewHistoryClick()
+    {
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters("histories", new Dictionary<string, object?>
+        {
+            {"Operation", (int)SelectedHistoryOperation.ViewDetail}
+        }));
+    }
+
+    private async Task<History> AddHistoryAsync(string content, JwtSecurityToken jwtSecurityToken)
+    {
+        var history = new History()
+        {
+            Content = content,
+            DecodeTime = DateTimeOffset.UtcNow,
+            Header = jwtSecurityToken.DecodeHeader(),
+            Payload = jwtSecurityToken.DecodePayload()
+        };
+
+        await HistoryService.AddAsync(history);
+
+        return history;
+    }
+}
