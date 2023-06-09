@@ -1,0 +1,52 @@
+﻿@if (JwtSecurityToken != null)
+{
+    <MudStack>
+        <MudText Typo="Typo.subtitle1">Header</MudText>
+
+        @foreach (var headerItem in JwtSecurityToken.Header)
+        {
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body2" Style="word-break: break-all; white-space: pre-wrap;">@headerItem.Key</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@headerItem.Value</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+
+        <MudText Typo="Typo.subtitle1">Payload</MudText>
+
+        @foreach (var payloadItem in JwtSecurityToken.Payload)
+        {
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body2" Style="word-break: break-all; white-space: pre-wrap;">@payloadItem.Key</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@payloadItem.Value</MudText>
+
+                </MudCardContent>
+            </MudCard>
+        }
+
+        <MudText Typo="Typo.subtitle1">Signature</MudText>
+
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@JwtSecurityToken.RawSignature</MudText>
+            </MudCardContent>
+        </MudCard>
+
+    </MudStack>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? JwtSecurityToken { get; set; }
+
+}

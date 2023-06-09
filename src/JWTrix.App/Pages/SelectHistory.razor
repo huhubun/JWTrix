@@ -1,0 +1,63 @@
+﻿@page "/histories"
+@using JWTrix.Data.Entities;
+@using JWTrix.Service.Abstractions;
+
+@inject NavigationManager Navigation
+@inject StateContainer State
+@inject IHistoryService HistoryService
+
+<h3>SelectHistory</h3>
+
+<MudList Clickable="true">
+    <Virtualize ItemsProvider="LoadHistories" Context="history">
+        <MudListItem Value="history.Id" OnClick="() => onClickHistory(history.Id, history.Content)">
+            <p>@history.Payload</p>
+            <p>@history.DecodeTime</p>
+        </MudListItem>
+        <MudDivider />
+    </Virtualize>
+</MudList>
+
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public long? CurrentId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "Operation")]
+    public int OperationParam { get; set; }
+
+    public SelectedHistoryOperation Operation => (SelectedHistoryOperation)OperationParam;
+
+    int historyCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var count = await HistoryService.GetCountAsync(null);
+        historyCount = count > Int32.MaxValue ? Int32.MaxValue : (int)count;
+
+        await base.OnInitializedAsync();
+    }
+
+    async ValueTask<ItemsProviderResult<History>> LoadHistories(ItemsProviderRequest request)
+    {
+        var histories = await HistoryService.GetByPageAsync(request.StartIndex, request.Count);
+        return new ItemsProviderResult<History>(histories, historyCount);
+    }
+
+    void onClickHistory(long id, string? content)
+    {
+        if (Operation == SelectedHistoryOperation.Compare)
+        {
+            if (CurrentId != null)
+            {
+                Navigation.NavigateTo($"/histories/{CurrentId.Value}/differences/{id}");
+            }
+        }
+        else if (Operation == SelectedHistoryOperation.ViewDetail)
+        {
+            Navigation.NavigateTo($"/detail/{id}");
+        }
+    }
+}

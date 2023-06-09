@@ -1,0 +1,27 @@
+﻿@using DiffPlex.DiffBuilder.Model
+@using static System.Web.HttpUtility
+
+@if (Piece != null && !string.IsNullOrEmpty(Piece.Text))
+{
+    string spaceValue = "\u00B7";
+    string tabValue = "\u00B7\u00B7\u00B7\u00B7";
+
+    if (Piece.Type == ChangeType.Deleted || Piece.Type == ChangeType.Inserted || Piece.Type == ChangeType.Unchanged)
+    {
+        @((MarkupString)(HtmlEncode(Piece.Text).Replace(" ", spaceValue).Replace("\t", tabValue)))
+    }
+    else if (Piece.Type == ChangeType.Modified)
+    {
+        foreach (var character in Piece.SubPieces)
+        {
+            if (character.Type == ChangeType.Imaginary) { continue; }
+
+            <span class="@character.Type.ToString()Character piece">@character.Text.Replace(" ", spaceValue.ToString())</span>
+        }
+    }
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public DiffPiece? Piece { get; set; }
+}

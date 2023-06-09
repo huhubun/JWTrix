@@ -1,0 +1,58 @@
+﻿@using MudBlazor
+@typeparam TEnum where TEnum : struct, Enum
+
+<MudPaper Class="d-flex justify-center" Elevation="0">
+    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" OverrideStyles="false">
+        @foreach (TEnum value in Enum.GetValues<TEnum>())
+        {
+            <MudButton 
+                Color="Color.Primary"
+                DisableElevation
+                Variant="Selected.Equals(value) ? Variant.Filled : Variant.Outlined"
+                OnClick="@(e => Selected = value)">
+                    @GetDisplayName(value)
+            </MudButton>
+        }
+    </MudButtonGroup>
+</MudPaper>
+
+
+@code {
+
+    [Parameter, EditorRequired]
+    public EventCallback<TEnum> OnSelectionChanged { get; set; }
+
+#pragma warning disable BL0007
+    private TEnum _selected;
+
+    [Parameter, EditorRequired]
+    public TEnum Selected
+    {
+        get => _selected;
+        set
+        {
+            if (!_selected.Equals(value))
+            {
+                _selected = value;
+                OnSelectionChanged.InvokeAsync(value);
+            }
+        }
+    }
+#pragma warning restore BL0007
+
+    private string GetDisplayName(TEnum value)
+    {
+        //var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
+        //if (member != null)
+        //{
+        //    var displayAttribute = member.GetCustomAttribute<DisplayAttribute>();
+        //    if (displayAttribute != null)
+        //    {
+        //        return displayAttribute.GetName();
+        //    }
+        //}
+        //return value.ToString();
+
+        return value.ToString();
+    }
+}

@@ -1,0 +1,40 @@
+﻿@page "/histories/{leftId:long}/differences/{rightId:long}"
+@using DiffPlex.DiffBuilder.Model;
+
+@inject StateContainer State
+@inject IHistoryService HistoryService
+
+@if (LeftJwtSecurityToken != null && RightJwtSecurityToken != null)
+{
+    <MudContainer Fixed Class="mt-4 pb-16">
+        <Diff OldText="@LeftJwtSecurityToken.DecodeHeader()" NewText="@RightJwtSecurityToken.DecodeHeader()" />
+
+        <br />
+
+        <Diff OldText="@LeftJwtSecurityToken.DecodePayload()" NewText="@RightJwtSecurityToken.DecodePayload()" />
+    </MudContainer>
+}
+
+@code {
+    [Parameter]
+    public long LeftId { get; set; }
+
+    [Parameter]
+    public long RightId { get; set; }
+
+    public JwtSecurityToken? LeftJwtSecurityToken { get; set; }
+    public JwtSecurityToken? RightJwtSecurityToken { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var left = HistoryService.GetByIdAsync(LeftId);
+        var right = HistoryService.GetByIdAsync(RightId);
+
+        Task.WaitAll(left, right);
+
+        LeftJwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(left.Result?.Content ?? String.Empty);
+        RightJwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(right.Result?.Content ?? String.Empty);
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,46 @@
+﻿@using DiffPlex.DiffBuilder.Model;
+@using DiffPlex.DiffBuilder;
+
+@inject ISideBySideDiffBuilder diffBuilder
+
+@if (model != null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Style="word-break: break-all; white-space: pre-wrap;">
+                        <DiffPane Pane="model.OldText" />
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Style="word-break: break-all; white-space: pre-wrap;">
+                        <DiffPane Pane="model.NewText" />
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string? OldText { get; set; }
+
+    [Parameter, EditorRequired]
+    public string? NewText { get; set; }
+
+    private SideBySideDiffModel? model = null;
+
+    protected override void OnInitialized()
+    {
+        model = diffBuilder.BuildDiffModel(OldText ?? String.Empty, NewText ?? String.Empty);
+
+        base.OnInitialized();
+    }
+}

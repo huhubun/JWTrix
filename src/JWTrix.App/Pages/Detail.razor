@@ -1,0 +1,125 @@
+﻿@page "/detail/{id:long}"
+
+@inject StateContainer State
+@inject ILogger<Detail> logger
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IHistoryService historyService
+@inject IJSRuntime JSRuntime
+
+@if (jwtContent == null || jwtSecurityToken == null)
+{
+    <p>载入失败</p>
+}
+else
+{
+    <MudContainer Fixed Class="mt-4 pb-16">
+
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Style="word-break: break-all;">
+                            @jwtContent
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <EnumButtonGroup Selected="decodeViewMode" OnSelectionChanged="@((DecodeViewMode value) => decodeViewMode = value)" />
+
+                @if (decodeViewMode == DecodeViewMode.Json)
+                {
+                    <JsonDecodeView JwtSecurityToken="jwtSecurityToken" />
+                }
+                else if (decodeViewMode == DecodeViewMode.Detail)
+                {
+                    <DetailDecodeView JwtSecurityToken="jwtSecurityToken" />
+                }
+
+            </MudItem>
+        </MudGrid>
+
+    </MudContainer>
+
+    <MudAppBar Bottom Fixed Color="Color.Dark" Elevation="0" Style="@($"background-color: {Colors.DeepPurple.Lighten5};")">
+        <MudSpacer />
+        <MudIconButton Title="从历史记录中移除" Icon="@Icons.Material.Outlined.Delete" Color="Color.Inherit" Edge="Edge.End" OnClick="OnDeleteClick" />
+        <MudIconButton Title="对比" Icon="@Icons.Material.Outlined.CompareArrows" Color="Color.Inherit" Edge="Edge.End" OnClick="OnCompareClick" />
+        <MudIconButton Title="复制到剪贴板" Icon="@Icons.Material.Outlined.CopyAll" Color="Color.Inherit" Edge="Edge.End" OnClick="OnCopyDecodeJsonClick" />
+        <MudIconButton Title="分享" Icon="@Icons.Material.Outlined.Share" Color="Color.Inherit" Edge="Edge.End" OnClick="OnShareDecodeJsonClick" />
+    </MudAppBar>
+}
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    private string? jwtContent = null;
+    private JwtSecurityToken? jwtSecurityToken = null;
+    private DecodeViewMode decodeViewMode = DecodeViewMode.Json;
+
+    private string? FullDecodeJwtJson
+    {
+        get
+        {
+            ArgumentNullException.ThrowIfNull(jwtSecurityToken);
+            return jwtSecurityToken.DecodeHeader() + "." + Environment.NewLine + jwtSecurityToken.DecodePayload() + "." + Environment.NewLine + jwtSecurityToken.RawSignature;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var history = await historyService.GetByIdAsync(Id);
+
+        if(history != null && history.Content != null)
+        {
+            jwtContent = history.Content;
+            jwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(history.Content);
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    async Task OnCopyDecodeJsonClick()
+    {
+        await Clipboard.Default.SetTextAsync(FullDecodeJwtJson);
+
+        Snackbar.Add("已复制到剪贴板", Severity.Success, DefaultSnackbarOptions.HideIconAndCloseAfterNavigation);
+    }
+
+    Task OnShareDecodeJsonClick()
+    {
+        return Share.Default.RequestAsync(new ShareTextRequest
+        {
+            Text = FullDecodeJwtJson,
+            // 必须这样设置，设置为 null 或 String.Empty 都会导致这个值为程序的名称
+            // https://learn.microsoft.com/zh-cn/dotnet/maui/platform-integration/data/share?view=net-maui-7.0&tabs=windows#platform-differences
+            Title = " "
+        });
+    }
+
+    void OnCompareClick()
+    {
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters("histories", new Dictionary<string, object?>()
+        {
+            {"CurrentId", Id},
+            {"Operation", (int)SelectedHistoryOperation.Compare}
+        }));
+    }
+
+    async Task OnDeleteClick()
+    {
+        var isAccept = await App.Current!.MainPage!.DisplayAlert("删除解析记录？", "被删除的记录将无法找回。", "accept", "cancel");
+        if (isAccept)
+        {
+            var deleteResult = await historyService.DeleteByIdAsync(Id);
+            if (deleteResult == 1)
+            {
+                Snackbar.Add("解析记录已删除", Severity.Success, options => options.HideIcon = true);
+                await JSRuntime.InvokeAsync<object>("history.back");
+            }
+        }
+    }
+}

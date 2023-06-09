@@ -1,0 +1,33 @@
+﻿@if (JwtSecurityToken != null)
+{
+    <MudStack>
+        <MudCard>
+            <MudCardContent>
+                <MudText Style="word-break: break-all; white-space: pre-wrap;">
+                    @JwtSecurityToken.DecodeHeader()
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardContent>
+                <MudText Style="word-break: break-all; white-space: pre-wrap;">
+                    @JwtSecurityToken.DecodePayload()
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardContent>
+                <MudText Style="word-break: break-all;">
+                    @JwtSecurityToken.RawSignature
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? JwtSecurityToken { get; set; }
+}
