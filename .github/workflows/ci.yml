@@ -10,7 +10,7 @@ on:
       - '**/*.gitignore'
   pull_request:
     branches: [ "main" ]
-    
+
 env:
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -65,7 +65,7 @@ jobs:
       - name: Build MAUI Windows
         # Set `PublishReadyToRun=false` to avoid NETSDK1094 error: https://github.com/dotnet/maui/issues/12100
         run: dotnet build JWTrix.sln -c Release -f net7.0-windows10.0.19041.0 --no-restore -p:PublishReadyToRun=false
-        
+
   build-ios:
     runs-on: macos-11
     name: iOS Build
@@ -110,6 +110,4 @@ jobs:
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI MacCatalyst
-        run: dotnet build JWTrix.sln -c Release -f net7.0-maccatalyst --no-restore -p:RuntimeIdentifiers=osx.12-x64
-        
-
+        run: dotnet build JWTrix.sln -c Release --no-restore
