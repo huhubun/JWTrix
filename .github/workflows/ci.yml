@@ -87,7 +87,7 @@ jobs:
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI iOS
-        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore
+        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore -p:PublishTrimmed=false
 
   build-mac:
     runs-on: macos-12
@@ -104,7 +104,7 @@ jobs:
       - name: Install MAUI Workloads
         run: |
           dotnet workload install maui --ignore-failed-sources
-          dotnet workload install maccatalyst tvos macos wasm-tools --ignore-failed-sources
+          dotnet workload install maccatalyst --ignore-failed-sources
 
       - name: Restore Dependencies
         run: dotnet restore JWTrix.sln
