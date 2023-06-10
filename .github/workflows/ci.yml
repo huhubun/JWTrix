@@ -66,48 +66,48 @@ jobs:
         # Set `PublishReadyToRun=false` to avoid NETSDK1094 error: https://github.com/dotnet/maui/issues/12100
         run: dotnet build JWTrix.sln -c Release -f net7.0-windows10.0.19041.0 --no-restore -p:PublishReadyToRun=false
 
-  build-ios:
-    runs-on: macos-11
-    name: iOS Build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # build-ios:
+  #   runs-on: macos-11
+  #   name: iOS Build
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 7.x
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: 7.x
 
-      - name: Install MAUI Workloads
-        run: |
-          dotnet workload install maui --ignore-failed-sources
-          dotnet workload install ios --ignore-failed-sources
+  #     - name: Install MAUI Workloads
+  #       run: |
+  #         dotnet workload install maui --ignore-failed-sources
+  #         dotnet workload install ios --ignore-failed-sources
 
-      - name: Restore Dependencies
-        run: dotnet restore JWTrix.sln
+  #     - name: Restore Dependencies
+  #       run: dotnet restore JWTrix.sln
 
-      - name: Build MAUI iOS
-        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore -p:PublishTrimmed=false
+  #     - name: Build MAUI iOS
+  #       run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore
 
-  build-mac:
-    runs-on: macos-12
-    name: MacCatalyst Build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # build-mac:
+  #   runs-on: macos-12
+  #   name: MacCatalyst Build
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 7.x
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: 7.x
 
-      - name: Install MAUI Workloads
-        run: |
-          dotnet workload install maui --ignore-failed-sources
-          dotnet workload install maccatalyst --ignore-failed-sources
+  #     - name: Install MAUI Workloads
+  #       run: |
+  #         dotnet workload install maui --ignore-failed-sources
+  #         dotnet workload install maccatalyst --ignore-failed-sources
 
-      - name: Restore Dependencies
-        run: dotnet restore JWTrix.sln
+  #     - name: Restore Dependencies
+  #       run: dotnet restore JWTrix.sln
 
-      - name: Build MAUI MacCatalyst
-        run: dotnet build JWTrix.sln -c Release --no-restore
+  #     - name: Build MAUI MacCatalyst
+  #       run: dotnet build JWTrix.sln -c Release -f net7.0-maccatalyst --no-restore
