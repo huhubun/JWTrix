@@ -35,8 +35,8 @@ jobs:
 
       - name: Install MAUI Workloads
         run: |
-          dotnet workload install android --ignore-failed-sources
           dotnet workload install maui --ignore-failed-sources
+          dotnet workload install android --ignore-failed-sources
 
       - name: Restore Dependencies
         run: dotnet restore JWTrix.sln
@@ -63,7 +63,8 @@ jobs:
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI Windows
-        run: dotnet build JWTrix.sln -c Release -f net7.0-windows10.0.19041.0 --no-restore
+        # Set `PublishReadyToRun=false` to avoid NETSDK1094 error: https://github.com/dotnet/maui/issues/12100
+        run: dotnet build JWTrix.sln -c Release -f net7.0-windows10.0.19041.0 --no-restore -p:PublishReadyToRun=false
         
   build-ios:
     runs-on: macos-11
@@ -79,14 +80,15 @@ jobs:
 
       - name: Install MAUI Workloads
         run: |
-          dotnet workload install ios --ignore-failed-sources
           dotnet workload install maui --ignore-failed-sources
+          dotnet workload install ios --ignore-failed-sources
 
       - name: Restore Dependencies
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI iOS
-        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore
+        # Set `PublishTrimmed=false` to avoid NETSDK1144 error
+        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore -p:PublishTrimmed=false
 
   build-mac:
     runs-on: macos-11
@@ -102,8 +104,8 @@ jobs:
 
       - name: Install MAUI Workloads
         run: |
-          dotnet workload install maccatalyst --ignore-failed-sources
           dotnet workload install maui --ignore-failed-sources
+          dotnet workload install maccatalyst tvos macos wasm-tools --ignore-failed-sources
 
       - name: Restore Dependencies
         run: dotnet restore JWTrix.sln
