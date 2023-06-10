@@ -87,9 +87,7 @@ jobs:
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI iOS
-        # Set `PublishTrimmed=false` to avoid NETSDK1144 error
-        # Set `MtouchLink=None` to avoid "iOS projects must build with PublishTrimmed=true. Current value: false. Set 'MtouchLink=None' instead to disable trimming for all assemblies."
-        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore -p:PublishTrimmed=false -p:MtouchLink=None
+        run: dotnet build JWTrix.sln -c Release -f net7.0-ios --no-restore
 
   build-mac:
     runs-on: macos-12
@@ -112,6 +110,6 @@ jobs:
         run: dotnet restore JWTrix.sln
 
       - name: Build MAUI MacCatalyst
-        run: dotnet build JWTrix.sln -c Release -f net7.0-maccatalyst --no-restore
+        run: dotnet build JWTrix.sln -c Release -f net7.0-maccatalyst --no-restore -p:RuntimeIdentifiers=osx.12-x64
         
 
