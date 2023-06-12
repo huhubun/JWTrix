@@ -1,0 +1,43 @@
+﻿@using System.Collections;
+
+<MudPaper Elevation="0" Class="flex-grow-1" Style="width: 100%;">
+    @if (HasValue && Value != null)
+    {
+        @if (Value is IList values)
+        {
+            <DetailDecodeItemListContent Values="values" class="ma-0" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">
+                @Value
+            </MudText>
+        }
+    }
+    else
+    {
+        <MudPaper Elevation="0" Class="d-flex align-center justify-center" Style="@($"background-color: {Colors.Grey.Lighten3}; height: 100%;")">
+
+            @if (!HasValue)
+            {
+                <MudIcon Icon="@Icons.Material.Outlined.Remove" />
+            }
+            else if (Value == null)
+            {
+                <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">(null)</MudText>
+            }
+
+        </MudPaper>
+    }
+</MudPaper>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public bool HasValue { get; set; }
+
+    [Parameter, EditorRequired]
+    public object? Value { get; set; }
+
+
+}
