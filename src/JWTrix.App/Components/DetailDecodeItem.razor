@@ -1,0 +1,41 @@
+﻿@using System.Text;
+@using System.Collections;
+
+@if (JwtSecurityToken != null)
+{
+    <MudCard Outlined>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@Item.Key</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+
+        <MudDivider />
+
+        @if(Item.Value is IList values)
+        {
+            <DetailDecodeItemListContent Values="@(Item.Value as IList)" Class="ma-4" />
+        }
+        else
+        {
+            <MudCardContent>
+                <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@Item.Value</MudText>
+            </MudCardContent>
+        }
+
+        @if (DetailDecodeItemHelper.DateTimeItems.Contains(Item.Key))
+        {
+            <MudDivider />
+            <DetailDecodeItemDateTimeContent JwtSecurityToken="JwtSecurityToken" Item="Item" />
+        }
+
+    </MudCard>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? JwtSecurityToken { get; set; }
+
+    [Parameter, EditorRequired]
+    public KeyValuePair<string, object> Item { get; set; }
+}

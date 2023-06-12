@@ -3,15 +3,35 @@
 
 @inject StateContainer State
 @inject IHistoryService HistoryService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
 @if (LeftJwtSecurityToken != null && RightJwtSecurityToken != null)
 {
-    <MudContainer Fixed Class="mt-4 pb-16">
-        <Diff OldText="@LeftJwtSecurityToken.DecodeHeader()" NewText="@RightJwtSecurityToken.DecodeHeader()" />
+    <EnumButtonGroup Selected="decodeViewMode" OnSelectionChanged="@((DecodeViewMode value) => decodeViewMode = value)" />
 
-        <br />
+    <MudContainer Fixed Class="mt-3 pb-16">
+        @if (decodeViewMode == DecodeViewMode.Json)
+        {
+            <Diff OldText="@LeftJwtSecurityToken.DecodeHeader()" NewText="@RightJwtSecurityToken.DecodeHeader()" />
 
-        <Diff OldText="@LeftJwtSecurityToken.DecodePayload()" NewText="@RightJwtSecurityToken.DecodePayload()" />
+            <br />
+
+            <Diff OldText="@LeftJwtSecurityToken.DecodePayload()" NewText="@RightJwtSecurityToken.DecodePayload()" />
+        }
+        else
+        {
+            <DetailDiff LeftJwtSecurityToken="LeftJwtSecurityToken" RightJwtSecurityToken="RightJwtSecurityToken" Selector="token => token.Header" />
+
+            <br />
+
+            <DetailDiff LeftJwtSecurityToken="LeftJwtSecurityToken" RightJwtSecurityToken="RightJwtSecurityToken" Selector="token => token.Payload" />
+        }
+
+        <MudPaper Elevation="0" Class="mt-3 d-flex gap-6">
+            <MudButton Variant="Variant.Outlined" FullWidth OnClick="() => GoToDetai(LeftId)">查看详情</MudButton>
+            <MudButton Variant="Variant.Outlined" FullWidth OnClick="() => GoToDetai(RightId)">查看详情</MudButton>
+        </MudPaper>
     </MudContainer>
 }
 
@@ -22,8 +42,9 @@
     [Parameter]
     public long RightId { get; set; }
 
-    public JwtSecurityToken? LeftJwtSecurityToken { get; set; }
-    public JwtSecurityToken? RightJwtSecurityToken { get; set; }
+    private DecodeViewMode decodeViewMode = DecodeViewMode.Json;
+    private JwtSecurityToken? LeftJwtSecurityToken = null;
+    private JwtSecurityToken? RightJwtSecurityToken = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,5 +57,10 @@
         RightJwtSecurityToken = JwtHelper.ConvertToJwtSecurityToken(right.Result?.Content ?? String.Empty);
 
         await base.OnInitializedAsync();
+    }
+
+    void GoToDetai(long id)
+    {
+        Navigation.NavigateTo($"/detail/{id}");
     }
 }

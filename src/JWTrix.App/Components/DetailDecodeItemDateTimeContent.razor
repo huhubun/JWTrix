@@ -1,0 +1,53 @@
+﻿@if (JwtSecurityToken != null)
+{
+    <MudCardContent>
+        @if (Item.Key == JwtRegisteredClaimNames.Exp)
+        {
+            if (JwtSecurityToken.ValidTo >= utcNow)
+            {
+                <MudChip Label Color="Color.Success">
+                    有效至 @JwtSecurityToken.ValidTo
+                </MudChip>
+            }
+            else
+            {
+                <MudChip Label Color="Color.Error">
+                    已过期 @JwtSecurityToken.ValidTo
+                </MudChip>
+            }
+        }
+
+        @if (Item.Key == JwtRegisteredClaimNames.Nbf)
+        {
+            if (JwtSecurityToken.ValidFrom >= utcNow)
+            {
+                <MudChip Label Color="Color.Warning">
+                    将于 @JwtSecurityToken.ValidFrom 后生效
+                </MudChip>
+            }
+            else
+            {
+                <MudChip Label Color="Color.Default">
+                    生效于 @JwtSecurityToken.ValidFrom
+                </MudChip>
+            }
+        }
+
+        @if (Item.Key == JwtRegisteredClaimNames.Iat)
+        {
+            <MudChip Label Color="Color.Default">
+                签发于 @JwtSecurityToken.IssuedAt
+            </MudChip>
+        }
+    </MudCardContent>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? JwtSecurityToken { get; set; }
+
+    [Parameter, EditorRequired]
+    public KeyValuePair<string, object> Item { get; set; }
+
+    private DateTime utcNow = DateTime.UtcNow;
+}

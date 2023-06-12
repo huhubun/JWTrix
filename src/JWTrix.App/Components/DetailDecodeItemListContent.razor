@@ -1,0 +1,27 @@
+﻿@using System.Collections;
+@using System.Linq;
+
+@if (Values != null)
+{
+    <MudCard Outlined Class="@Class" Style="width: 100%;">
+        @foreach (var item in Values)
+        {
+            <MudCardContent>
+                <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@(item?.ToString() ?? String.Empty)</MudText>
+            </MudCardContent>
+
+            @if (item != Values[^1])
+            {
+                <MudDivider />
+            }
+        }
+    </MudCard>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IList? Values { get; set; }
+
+    [Parameter]
+    public string? Class{ get; set; }
+}

@@ -118,7 +118,7 @@ else
             if (deleteResult == 1)
             {
                 Snackbar.Add("解析记录已删除", Severity.Success, options => options.HideIcon = true);
-                await JSRuntime.InvokeAsync<object>("history.back");
+                await JSRuntime.BrowserGoBack();
             }
         }
     }

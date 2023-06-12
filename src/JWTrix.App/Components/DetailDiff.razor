@@ -1,0 +1,81 @@
+﻿@using System.Collections;
+
+@if (LeftJwtSecurityToken != null 
+    && RightJwtSecurityToken != null
+    && left != null
+    && right != null)
+{
+    <MudStack>
+        @foreach(var key in keys)
+        {
+            var leftHasValue = left.TryGetValue(key, out var leftValue);
+            var rightHasValue = right.TryGetValue(key, out var rightValue);
+            var isEquals = leftHasValue && rightHasValue && leftValue?.ToString() == rightValue?.ToString();
+
+            <MudCard Outlined Style="@(isEquals ? String.Empty : $"border-color: {Colors.Red.Default}")">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@key</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+
+                <MudDivider />
+
+                <MudCardContent Class="d-flex align-stretch">
+
+                    @if (isEquals)
+                    {
+                        if(leftValue is IList values)
+                        {
+                            <DetailDecodeItemListContent Values="values" class="ma-0" style="width: 100%;" />
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">
+                                @leftValue
+                            </MudText>
+                        }
+                    }
+                    else
+                    {
+                        <DetailDiffContent HasValue="leftHasValue" Value="leftValue" />
+
+                        <MudDivider Vertical FlexItem Class="mx-3" />
+
+                        <DetailDiffContent HasValue="rightHasValue" Value="rightValue" />
+                    }
+                </MudCardContent>
+
+            </MudCard>
+        }
+
+    </MudStack>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? LeftJwtSecurityToken { get; set; }
+
+    [Parameter, EditorRequired]
+    public JwtSecurityToken? RightJwtSecurityToken { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<JwtSecurityToken, Dictionary<string, object>>? Selector { get; set; }
+
+    private Dictionary<string, object>? left = null;
+    private Dictionary<string, object>? right = null;
+    private IEnumerable<string> keys = Enumerable.Empty<string>();
+
+    protected override Task OnInitializedAsync()
+    {
+        if (LeftJwtSecurityToken != null && RightJwtSecurityToken != null && Selector != null)
+        {
+            left = Selector(LeftJwtSecurityToken);
+            right = Selector(RightJwtSecurityToken);
+
+            keys = left.Keys.Concat(right.Keys.Except(left.Keys));
+        }
+
+        return base.OnInitializedAsync();
+    }
+}

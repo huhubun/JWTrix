@@ -5,33 +5,14 @@
 
         @foreach (var headerItem in JwtSecurityToken.Header)
         {
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.body2" Style="word-break: break-all; white-space: pre-wrap;">@headerItem.Key</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@headerItem.Value</MudText>
-                </MudCardContent>
-            </MudCard>
+            <DetailDecodeItem JwtSecurityToken="JwtSecurityToken" Item="headerItem" />
         }
 
         <MudText Typo="Typo.subtitle1">Payload</MudText>
 
         @foreach (var payloadItem in JwtSecurityToken.Payload)
         {
-            <MudCard>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.body2" Style="word-break: break-all; white-space: pre-wrap;">@payloadItem.Key</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="Typo.body1" Style="word-break: break-all; white-space: pre-wrap;">@payloadItem.Value</MudText>
-
-                </MudCardContent>
-            </MudCard>
+            <DetailDecodeItem JwtSecurityToken="JwtSecurityToken" Item="payloadItem" />
         }
 
         <MudText Typo="Typo.subtitle1">Signature</MudText>
